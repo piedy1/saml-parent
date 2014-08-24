@@ -1,0 +1,39 @@
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" ID="_d3e2e123-cec9-4e51-a200-9ba4db6a8e4d" entityID="https://sp.bfh.ch">
+  <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <ds:SignedInfo>
+      <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+      <ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+      <ds:Reference URI="#_d3e2e123-cec9-4e51-a200-9ba4db6a8e4d">
+        <ds:Transforms>
+          <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+          <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+        </ds:Transforms>
+        <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+        <ds:DigestValue>jKDOzDLg9U9+FL/HqqgbPCSGMjE=</ds:DigestValue>
+      </ds:Reference>
+    </ds:SignedInfo>
+    <ds:SignatureValue>Qdbqc1RkF7+YzdulCVCrt1zTP5zuoZrq6ShysH8vtSDUVvgHTtNLaHpp69bSRYtzGZ02Tb3cuKk7NhqWjoJp9Bx9a+mwqCXlZkf2HAosdtxlVZHC3EjoRHzYR+ge4pp48a0WS9nBevjBdKMzKDj2nRiwAAzc+xxH/1K9prc3FgY8wRp5yzJCe3gvjUO38Z4AQ4bhH6UB8Ip6zDgUBacm+H/9ESCd8DQuby0VRGZB/9Xs3hW2X+kyxbJFNhLrvnNqYrlKsGI69pNMmVbTXh/T42T3XWRTQEyalJqzBCnNyqPzjEE3wsEe0kbLb4Q/YSe2i4AJVZYi64crKWMOrn6HTg==</ds:SignatureValue>
+    <ds:KeyInfo>
+      <ds:X509Data>
+        <ds:X509Certificate>MIIDIDCCAgigAwIBAgIEUVGw8zANBgkqhkiG9w0BAQIFADBSMQswCQYDVQQGEwJDSDEUMBIGA1UE
+CBMLU3dpdHplcmxhbmQxDTALBgNVBAcTBEJpZWwxDDAKBgNVBAoTA0JGSDEQMA4GA1UEAxMHZGVt
+by1jaDAeFw0xMzAzMjYxNDMxMTVaFw0xOTAzMjYxNDMxMTVaMFIxCzAJBgNVBAYTAkNIMRQwEgYD
+VQQIEwtTd2l0emVybGFuZDENMAsGA1UEBxMEQmllbDEMMAoGA1UEChMDQkZIMRAwDgYDVQQDEwdk
+ZW1vLWNoMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj1pbJ1U7oRaATKgS6ooy2NG7
+D7NSLe6WMBn+Xy45Rq/isplJGTIZ0IVFDEMtSjK11RMsBNrtW1GGY+NdzRxuiyhhuonPUsyM0pIt
+SPUhN2NjoAeSicUtc98Zn0V1iNYyDIJYUip1awMgZkJ6QkwXL3l7uYfmUuCjas2r3+Gn77aGljco
+xKK9Rh4N9PwZO4Beuo5n/wpxyiVIH3RBzBRRuEmg4A8HUDuQdxVOdJ0GETmNJruMu2ralqU6oK6U
+KCFjy2vHBVrVq0FM4NV7B6hpaoh2/qZvkgYUulXa6AUyhI18yAYpCxNxddyrABSHBWA5ySCLfpi+
+K8A7VhBujEKLrQIDAQABMA0GCSqGSIb3DQEBAgUAA4IBAQAkWTgPjXMMKhFVHaP3wRDrqVu9QuQw
+XAJUenJGIW1VITCDFH5RsJdvgHksC/qpxAASd5COWuDIkmaFTG/oHY3dVZOWeVZ1RwfPWxL0bs0M
+Uq8sGotsB79mpYHk4wki0euhXSjHmXDpf39x9OX+EHcuqC2XnWI4Anu+asRWMq5joFlXfjikRM7m
+133HVijuotN0ZvBuiUUZuCzZKKZ48fhKaTKmveqeonjGJzuSkOf1ntS43iK2eyj+zRvwPccAizN4
+5WXQGZW6JivEs4fHDn9GNVuiYn3k+Wy2VkcGo7M12RQZYQK+P696FuhrNu9utIEQ55q32sAo5cBD
+Z//xfSv+</ds:X509Certificate>
+      </ds:X509Data>
+    </ds:KeyInfo>
+  </ds:Signature>
+  <md:SPSSODescriptor AuthnRequestsSigned="true" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
+  </md:SPSSODescriptor>
+</md:EntityDescriptor>

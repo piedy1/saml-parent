@@ -35,7 +35,6 @@ public class Config {
 
     }
     
-    
     public static XMLObjectBuilderFactory getXmlObjectBuilderFactory() {
         return xmlObjectBuilderFactory;
     }

@@ -7,12 +7,9 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.joda.time.DateTime;
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.saml2.core.Issuer;
@@ -23,11 +20,8 @@ import org.opensaml.xml.security.SecurityConfiguration;
 import org.opensaml.xml.security.SecurityException;
 import org.opensaml.xml.security.SecurityHelper;
 import org.opensaml.xml.security.credential.Credential;
-import org.opensaml.xml.security.keyinfo.KeyInfoHelper;
 import org.opensaml.xml.security.x509.BasicX509Credential;
-import org.opensaml.xml.signature.KeyInfo;
 import org.opensaml.xml.signature.Signature;
-import org.opensaml.xml.signature.SignatureConstants;
 import org.opensaml.xml.signature.SignatureException;
 import org.opensaml.xml.signature.Signer;
 
@@ -82,8 +76,8 @@ public class AuthenticationResquestBuilder {
         authnRequest.setProviderName(providerName);
         authnRequest.setIssuer(issuer);
         authnRequest.setNameIDPolicy(nameIdPolicy);
-    //      authnRequest.setForceAuthn(true);
-        //      authnRequest.setIsPassive(false);
+    //  authnRequest.setForceAuthn(true);
+    //  authnRequest.setIsPassive(false);
 
         Credential signingCredential = getSigningCredential();
         Signature signature = (Signature) SamlUtil.createXMLObject(Signature.DEFAULT_ELEMENT_NAME);
@@ -112,13 +106,13 @@ public class AuthenticationResquestBuilder {
 
     }
 
-    private BasicX509Credential getSigningCredential() {
+    public BasicX509Credential getSigningCredential() {
         // Load the KeyStore and get the signing key and certificate.
         KeyStore ks;
         try {
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(new FileInputStream("C:\\Users\\admin\\Desktop\\myidp.jks"), "moleson".toCharArray());
-            KeyStore.PrivateKeyEntry keyEntry = (KeyStore.PrivateKeyEntry) ks.getEntry("tomcat", new KeyStore.PasswordProtection("moleson".toCharArray()));
+            ks.load(new FileInputStream("/Users/Yandy/Desktop/ch-demo.jks"), "demo-ch".toCharArray());
+            KeyStore.PrivateKeyEntry keyEntry = (KeyStore.PrivateKeyEntry) ks.getEntry("demo-ch", new KeyStore.PasswordProtection("demo-ch".toCharArray()));
             BasicX509Credential credential = new BasicX509Credential();
             credential.setPrivateKey(keyEntry.getPrivateKey());
             credential.setEntityCertificate((X509Certificate) keyEntry.getCertificate());
