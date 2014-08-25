@@ -1,9 +1,25 @@
 package ch.bfh.ti.saml.util;
 
 import ch.bfh.ti.saml.config.Config;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import org.opensaml.saml2.metadata.EntityDescriptor;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.opensaml.xml.XMLObject;
 import org.opensaml.xml.XMLObjectBuilder;
 import org.opensaml.xml.XMLObjectBuilderFactory;
@@ -33,44 +49,90 @@ public class SamlUtil {
 
     /**
      *
-     * @param xmlSource
+     * @param xmlSourcePath
      * @return
      * @throws XMLParserException
-     * @throws UnmarshallingException
+     * @throws UnmarshallingException //TODO analyze this method
+     * @throws java.io.FileNotFoundException
      */
-    public static EntityDescriptor getEntityDecriptor(String xmlSource) throws XMLParserException, UnmarshallingException {
+    public static XMLObject createXMLObjectFromXMLSource(String xmlSourcePath) throws XMLParserException, UnmarshallingException, FileNotFoundException {
 
         // Get parser pool manager
         BasicParserPool ppMgr = new BasicParserPool();
         ppMgr.setNamespaceAware(true);
 
         // Parse metadata file
-        InputStream in = SamlUtil.class.getResourceAsStream(xmlSource);
+        InputStream in = new FileInputStream(xmlSourcePath);
         Document inCommonMDDoc = ppMgr.parse(in);
         Element metadataRoot = inCommonMDDoc.getDocumentElement();
 
         // Unmarshall using the document root element, an EntityDescriptor in this case
-        return (EntityDescriptor)unmarshall(metadataRoot);
+        return unmarshall(metadataRoot);
     }
-    
 
     /**
-     * 
+     *
+     * @param outputXmlPath
+     * @param xmlObj
+     */
+    public static void writeXMLObjectToXML(String outputXmlPath, XMLObject xmlObj) {
+        try {
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.newDocument();
+
+            OutputStream os = new FileOutputStream(outputXmlPath);
+
+            marshall(xmlObj, document);
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer trans = tf.newTransformer();
+            trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            trans.setOutputProperty(OutputKeys.INDENT, "yes");
+            trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            trans.transform(new DOMSource(document), new StreamResult(os));
+          
+        } catch (MarshallingException | ParserConfigurationException | FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (TransformerConfigurationException ex) {
+            ex.printStackTrace();
+        } catch (TransformerException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            Logger.getLogger(SamlUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     *
      * @param element
      * @return
-     * @throws UnmarshallingException 
+     * @throws UnmarshallingException
      */
     public static XMLObject unmarshall(Element element) throws UnmarshallingException {
-       return Config.getUnmarshallerFactory().getUnmarshaller(element).unmarshall(element);
+        return Config.getUnmarshallerFactory().getUnmarshaller(element).unmarshall(element);
     }
 
     /**
-     * 
+     *
      * @param xmlObject
      * @return
-     * @throws MarshallingException 
+     * @throws MarshallingException
      */
     public static Element marshall(XMLObject xmlObject) throws MarshallingException {
-       return Config.getMarshallerFactory().getMarshaller(xmlObject).marshall(xmlObject);
+        return Config.getMarshallerFactory().getMarshaller(xmlObject).marshall(xmlObject);
+    }
+
+    /**
+     *
+     * @param xmlObject
+     * @param document
+     * @return
+     * @throws MarshallingException
+     */
+    public static Element marshall(XMLObject xmlObject, Document document) throws MarshallingException {
+        return Config.getMarshallerFactory().getMarshaller(xmlObject).marshall(xmlObject, document);
     }
 }

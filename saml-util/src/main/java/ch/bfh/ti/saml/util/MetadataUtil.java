@@ -7,12 +7,13 @@ package ch.bfh.ti.saml.util;
 
 import ch.bfh.ti.saml.common.OrganizationCharacteristic;
 import ch.bfh.ti.saml.config.Config;
+import static ch.bfh.ti.saml.util.SamlUtil.unmarshall;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -34,6 +35,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.opensaml.common.SignableSAMLObject;
+import org.opensaml.common.xml.SAMLConstants;
+import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.saml2.metadata.AssertionConsumerService;
 import org.opensaml.saml2.metadata.AttributeConsumingService;
 import org.opensaml.saml2.metadata.ContactPerson;
@@ -52,8 +56,10 @@ import org.opensaml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.saml2.metadata.SingleLogoutService;
 import org.opensaml.saml2.metadata.SurName;
 import org.opensaml.xml.Configuration;
-import org.opensaml.xml.io.Marshaller;
 import org.opensaml.xml.io.MarshallingException;
+import org.opensaml.xml.io.UnmarshallingException;
+import org.opensaml.xml.parse.BasicParserPool;
+import org.opensaml.xml.parse.XMLParserException;
 import org.opensaml.xml.security.SecurityConfiguration;
 import org.opensaml.xml.security.SecurityException;
 import org.opensaml.xml.security.SecurityHelper;
@@ -65,7 +71,7 @@ import org.opensaml.xml.signature.Signature;
 import org.opensaml.xml.signature.SignatureException;
 import org.opensaml.xml.signature.Signer;
 import org.w3c.dom.Document;
-import sun.nio.cs.UnicodeEncoder;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -118,64 +124,17 @@ public class MetadataUtil {
      * @param spSSODesc
      * @param org
      * @param contactPerson
+     * @return 
      */
-    public static void generateSPEntityDescriptor(String entityId, SPSSODescriptor spSSODesc, Organization org, ContactPerson contactPerson) {
+    public static EntityDescriptor generateSPEntityDescriptor(String entityId, SPSSODescriptor spSSODesc, Organization org, List<ContactPerson>contactPerson) {
         EntityDescriptor entityDec = (EntityDescriptor) SamlUtil.createXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME);
         entityDec.setEntityID(entityId);
         entityDec.setID("_"+UUID.randomUUID().toString());
         entityDec.getRoleDescriptors().add(spSSODesc);
-
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.newDocument();
-          
-            OutputStream os = new FileOutputStream("src/main/resources/metadata/sp-metadata.xml");
-            
-            
-        Credential signingCredential = getSigningCredential();
-        Signature signature = (Signature) SamlUtil.createXMLObject(Signature.DEFAULT_ELEMENT_NAME);
-        signature.setSigningCredential(signingCredential);
-//      signature.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
-//      signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
-
-        SecurityConfiguration secConfig = Configuration.getGlobalSecurityConfiguration();
-
-        SecurityHelper.prepareSignatureParams(signature, signingCredential, secConfig, null);
-        entityDec.setSignature(signature);
-
-        try {
-            SamlUtil.marshall(entityDec);
-        } catch (MarshallingException e) {
-            e.printStackTrace();
-            //TODO
-        }
-        try {
-            Signer.signObject(signature);
-        } catch (SignatureException e) {
-            //TODO
-            e.printStackTrace();
-        }
-            
-            Configuration.getMarshallerFactory().getMarshaller(entityDec).marshall(entityDec, document);
-            
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer trans = tf.newTransformer();
-            trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            trans.setOutputProperty(OutputKeys.INDENT, "yes");
-            trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            trans.transform(new DOMSource(document), new StreamResult(os));
-  
-        } 
-        catch (FileNotFoundException | TransformerConfigurationException | ParserConfigurationException ex) {
-            Logger.getLogger(MetadataUtil.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (TransformerException | MarshallingException ex) {
-            Logger.getLogger(MetadataUtil.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(MetadataUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        entityDec.setOrganization(org);
+        for(ContactPerson cp : contactPerson)
+            entityDec.getContactPersons().add(cp);
+        return entityDec;
     }
 
     /**
@@ -190,10 +149,10 @@ public class MetadataUtil {
      * @return
      */
     public static SPSSODescriptor genarateSPSSODescriptor(boolean isAuthRequestSigned, boolean wantAssertionsSigned, List<KeyDescriptor> keyDes,
-            List<SingleLogoutService> sigLogouts, List<NameIDFormat> nameIds,
-            List<AssertionConsumerService> assertConsServs, AttributeConsumingService attributeConServ) {
+        List<SingleLogoutService> sigLogouts, List<NameIDFormat> nameIds,
+        List<AssertionConsumerService> assertConsServs, AttributeConsumingService attributeConServ) {
         SPSSODescriptor spSSODesc = (SPSSODescriptor) SamlUtil.createXMLObject(SPSSODescriptor.DEFAULT_ELEMENT_NAME);
-        spSSODesc.addSupportedProtocol("urn:oasis:names:tc:SAML:2.0:protocol");
+        spSSODesc.addSupportedProtocol(SAMLConstants.SAML20P_NS);
         spSSODesc.setAuthnRequestsSigned(isAuthRequestSigned);
         spSSODesc.setWantAssertionsSigned(wantAssertionsSigned);
 
@@ -337,43 +296,55 @@ public class MetadataUtil {
         }
         return contactPerson;
     }
-    
-    
-    public static BasicX509Credential getSigningCredential() {
-        // Load the KeyStore and get the signing key and certificate.
-        KeyStore ks;
-        try {
-            ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(new FileInputStream("/Users/Yandy/Desktop/ch-demo.jks"), "demo-ch".toCharArray());
-            KeyStore.PrivateKeyEntry keyEntry = (KeyStore.PrivateKeyEntry) ks.getEntry("demo-ch", new KeyStore.PasswordProtection("demo-ch".toCharArray()));
-            BasicX509Credential credential = new BasicX509Credential();
-            credential.setPrivateKey(keyEntry.getPrivateKey());
-            credential.setEntityCertificate((X509Certificate) keyEntry.getCertificate());
 
-            return credential;
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | IOException | CertificateException ex) {
-            //TODO
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws XMLParserException, FileNotFoundException, UnmarshallingException {
         Config conf = new Config();
         conf.initialize();
 
         NameIDFormat nameIdFor = generateNameIDFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:transient");
         List<NameIDFormat> nameIdsForm = new ArrayList<>();
         nameIdsForm.add(nameIdFor);
-        
-        
-        
+            
         SPSSODescriptor sp = genarateSPSSODescriptor(true, true, new ArrayList<KeyDescriptor>(),
-                new ArrayList<SingleLogoutService>(),nameIdsForm ,
+                new ArrayList<SingleLogoutService>(), nameIdsForm ,
                 new ArrayList<AssertionConsumerService>(), null);
 
-        generateSPEntityDescriptor("https://sp.bfh.ch", sp, null, null);
+//        EntityDescriptor ent = generateSPEntityDescriptor("https://sp.bfh.ch", sp, null, new ArrayList<ContactPerson>());
+        
+        AuthnRequest r = (AuthnRequest) SamlUtil.createXMLObjectFromXMLSource("C:\\Users\\admin\\Desktop\\SuisseID_2.0\\SuisseID_2.0\\ClaimAssertionService\\trunk\\ClaimAssertionService\\src\\test\\resources\\requestToSign.xml");
+        
+        try {
+            
+            KeyStore.PrivateKeyEntry entry = SignatureUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
+            SignatureUtil.SignSignableSAMLObject(r, entry);
+            
+            SamlUtil.writeXMLObjectToXML("src/main/resources/metadata/sp-metadata.xml", r);
+            
+        }     
+        catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableEntryException ex) {
+            Logger.getLogger(MetadataUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+        try {
+//            EntityDescriptor ent1 = (EntityDescriptor) SamlUtil.createXMLObjectFromXMLSource("src/main/resources/metadata/sp-metadata.xml");
+             AuthnRequest r2 = (AuthnRequest) SamlUtil.createXMLObjectFromXMLSource("src/main/resources/metadata/sp-metadata.xml");
+            
+//             if(r2.equals(r)){
+//                 System.out.println("They are equals!");
+//             }
+//             else
+//                 System.out.println("They are not equals!");
+//             
+             if (SignatureUtil.istSignatureValid(r2)) {
+                System.out.println("The signature is valid");
+            } else {
+                System.out.println("The signature is not valid");
+            }
+        } catch (Exception ex) {
+            System.err.println("Could not create EntityDescriptor");
+        }
+        
+
     }
 
 }

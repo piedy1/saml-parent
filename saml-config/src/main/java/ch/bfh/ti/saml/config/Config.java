@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ch.bfh.ti.saml.config;
 
 import org.opensaml.DefaultBootstrap;
@@ -20,21 +15,24 @@ public class Config {
 
     private static XMLObjectBuilderFactory xmlObjectBuilderFactory;
     private static UnmarshallerFactory unmarshallerFactory;
-    private static MarshallerFactory marshallerFactory;   
+    private static MarshallerFactory marshallerFactory;
+    private static boolean isInitialized;
 
-    
     public void initialize() {
         try {
-            DefaultBootstrap.bootstrap();
-            xmlObjectBuilderFactory = Configuration.getBuilderFactory();
-            unmarshallerFactory = Configuration.getUnmarshallerFactory();
-            marshallerFactory = Configuration.getMarshallerFactory();
-        } catch (ConfigurationException ex) {
+            if (!isInitialized) {
+                DefaultBootstrap.bootstrap();
+                xmlObjectBuilderFactory = Configuration.getBuilderFactory();
+                unmarshallerFactory = Configuration.getUnmarshallerFactory();
+                marshallerFactory = Configuration.getMarshallerFactory();
+                isInitialized = true;
+            }
+        } catch (ConfigurationException ex){
             //TODO logger
         }
 
     }
-    
+
     public static XMLObjectBuilderFactory getXmlObjectBuilderFactory() {
         return xmlObjectBuilderFactory;
     }
@@ -46,5 +44,5 @@ public class Config {
     public static MarshallerFactory getMarshallerFactory() {
         return marshallerFactory;
     }
-           
+
 }
