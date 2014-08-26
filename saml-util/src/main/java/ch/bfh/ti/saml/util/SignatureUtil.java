@@ -1,10 +1,4 @@
 package ch.bfh.ti.saml.util;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -19,7 +13,6 @@ import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.security.keyinfo.KeyInfoHelper;
 import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.signature.Signature;
-import org.opensaml.xml.signature.SignatureConstants;
 import org.opensaml.xml.signature.SignatureException;
 import org.opensaml.xml.signature.SignatureValidator;
 import org.opensaml.xml.signature.Signer;
@@ -27,18 +20,18 @@ import org.opensaml.xml.validation.ValidationException;
 
 /**
  *
- * @author admin
+ * @author yandy
  */
 public class SignatureUtil {
 
     /**
      *
      * @param sigSamlObj
-     * @param keyEntry
+     * @param credential
      */
-    public static void SignSignableSAMLObject(SignableSAMLObject sigSamlObj, KeyStore.PrivateKeyEntry keyEntry) {
+    public static void SignSignableSAMLObject(SignableSAMLObject sigSamlObj, BasicX509Credential credential) {
 
-        Credential signingCredential = getSigningCredential(keyEntry);
+        Credential signingCredential = credential;
         Signature signature = (Signature) SamlUtil.createXMLObject(Signature.DEFAULT_ELEMENT_NAME);
         signature.setSigningCredential(signingCredential);
 //        signature.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
@@ -74,17 +67,17 @@ public class SignatureUtil {
      * @return
      */
     public static boolean istSignatureValid(final SignableSAMLObject xmlObject) {
-
+        //TODO test trust
         SAMLSignatureProfileValidator profileValidator = new SAMLSignatureProfileValidator();
         Signature sig = xmlObject.getSignature();
         if (sig == null) {
-            System.err.println("No signature on XML object");
+            //TODO "No signature on XML object");
             return false;
         }
         try {
             profileValidator.validate(sig);
         } catch (ValidationException ex) {
-            System.err.println("Indicates signature did not conform to SAML Signature profile");
+            //TODO "Indicates signature did not conform to SAML Signature profile");
             return false;
         }
 
@@ -93,13 +86,13 @@ public class SignatureUtil {
             final List<X509Certificate> certificates = KeyInfoHelper
                     .getCertificates(sig.getKeyInfo());
             if (certificates.isEmpty()) {
-                System.err.println("No certificates in KeyInfo found");
+                //TODO "No certificates in KeyInfo found");
                 return false;
             }
             certToCheck = certificates.get(0);
             
         } catch (CertificateException ex) {
-            System.err.println("No valid keyinfo in signature found");
+            //TODO "No valid keyinfo in signature found");
             return false;
         }
 
@@ -110,42 +103,10 @@ public class SignatureUtil {
             SignatureValidator sigValidator = new SignatureValidator(credential);
             sigValidator.validate(sig);
         } catch (ValidationException e) {
-            System.err.println("Indicates signature was not cryptographically valid, or possibly a processing error");
+           //TODO "Indicates signature was not cryptographically valid, or possibly a processing error");
             //"Signature was not valid";
             return false;
         }
         return true;
-    }
-
-    /**
-     *
-     * @param keyStorePath
-     * @param keyStorePassw
-     * @param alias
-     * @param aliasPassword
-     * @return
-     * @throws KeyStoreException
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateException
-     * @throws UnrecoverableEntryException
-     */
-    public static KeyStore.PrivateKeyEntry getKeyStore(String keyStorePath, String keyStorePassw, String alias, String aliasPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableEntryException {
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(new FileInputStream(keyStorePath), keyStorePassw.toCharArray());
-        KeyStore.PrivateKeyEntry keyEntry = (KeyStore.PrivateKeyEntry) ks.getEntry(alias, new KeyStore.PasswordProtection(aliasPassword.toCharArray()));
-        return keyEntry;
-    }
-
-    /**
-     *
-     * @param keyEntry
-     * @return
-     */
-    private static BasicX509Credential getSigningCredential(KeyStore.PrivateKeyEntry keyEntry) {
-        BasicX509Credential credential = new BasicX509Credential();
-        credential.setPrivateKey(keyEntry.getPrivateKey());
-        credential.setEntityCertificate((X509Certificate) keyEntry.getCertificate());
-        return credential;
     }
 }

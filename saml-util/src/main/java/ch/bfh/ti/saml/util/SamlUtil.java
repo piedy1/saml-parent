@@ -90,8 +90,10 @@ public class SamlUtil {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer trans = tf.newTransformer();
             trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            trans.setOutputProperty(OutputKeys.INDENT, "yes");
-            trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+//          The code below invalidate the signature
+//          trans.setOutputProperty(OutputKeys.INDENT, "yes");
+//          trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            
             trans.transform(new DOMSource(document), new StreamResult(os));
           
         } catch (MarshallingException | ParserConfigurationException | FileNotFoundException ex) {
