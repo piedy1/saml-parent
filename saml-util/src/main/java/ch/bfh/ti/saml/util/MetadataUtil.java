@@ -52,6 +52,7 @@ import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.io.UnmarshallingException;
 import org.opensaml.xml.parse.XMLParserException;
 import org.opensaml.xml.security.credential.BasicCredential;
+import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.security.credential.UsageType;
 import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.security.x509.X509Credential;
@@ -307,7 +308,7 @@ public class MetadataUtil {
         conf.initialize();
 
         try {
-            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
+            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("/Users/Yandy/Desktop/myidp.jks", "moleson", "tomcat", "moleson");
             BasicX509Credential credential = CertificateUtil.getSigningCredential(entry);
             KeyInfo keyInfo = CertificateUtil.getKeyInfo(credential);
 
@@ -317,7 +318,7 @@ public class MetadataUtil {
             encMethods.add(encMethod);
 
             //You must create a new keyInfo
-            KeyStore.PrivateKeyEntry entry1 = CertificateUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
+            KeyStore.PrivateKeyEntry entry1 = CertificateUtil.getKeyStore("/Users/Yandy/Desktop/myidp.jks", "moleson", "tomcat", "moleson");
             BasicX509Credential credential1 = CertificateUtil.getSigningCredential(entry1);
             KeyInfo keyInfo1 = CertificateUtil.getKeyInfo(credential1);
 
@@ -366,7 +367,7 @@ public class MetadataUtil {
             String originalAssertionString = XMLHelper.nodeToString(plaintextElement);
             System.out.println("Assertion String: " + originalAssertionString);
             
-            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
+            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("/Users/Yandy/Desktop/myidp.jks", "moleson", "tomcat", "moleson");
 
             EncryptedAssertion encAss = EncrypterUtil.encryptAssertion(assertion, (X509Certificate)entry.getCertificate());
             Element plaintextEncr = SamlUtil.marshall(encAss);
@@ -374,8 +375,12 @@ public class MetadataUtil {
             
             BasicX509Credential credential = new BasicX509Credential();
             credential.setPrivateKey(entry.getPrivateKey());
+            credential.setPublicKey(entry.getCertificate().getPublicKey());
+          
+            List<Credential> credentials = new ArrayList<>();
+            credentials.add(credential);
             
-            Assertion decrytedAssert = EncrypterUtil.decryptEncryptedAssertion(encAss, credential);
+            Assertion decrytedAssert = EncrypterUtil.decryptEncryptedAssertion(encAss, credentials);
             String decryptAssertionString = XMLHelper.nodeToString(plaintextElement);
             System.out.println("Decrypted Assertion String: " + decryptAssertionString);
         
