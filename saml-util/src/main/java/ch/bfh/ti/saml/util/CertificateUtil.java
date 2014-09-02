@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import org.apache.log4j.Logger;
 import org.opensaml.xml.security.SecurityException;
 import org.opensaml.xml.security.keyinfo.KeyInfoGenerator;
 import org.opensaml.xml.security.x509.BasicX509Credential;
@@ -26,6 +27,7 @@ import org.opensaml.xml.signature.KeyInfo;
  */
 public class CertificateUtil {
     
+    private static final Logger logger = Logger.getLogger(CertificateUtil.class.getName());
     /**
      * 
      * @param credential
@@ -33,6 +35,7 @@ public class CertificateUtil {
      * @throws SecurityException 
      */
     public static KeyInfo getKeyInfo(X509Credential credential) throws SecurityException {
+        logger.info("Getting the KeyInfo");
         X509KeyInfoGeneratorFactory keyInfoGeneratorFactory = new X509KeyInfoGeneratorFactory();
         keyInfoGeneratorFactory.setEmitEntityCertificate(true);
         KeyInfoGenerator keyInfoGenerator = keyInfoGeneratorFactory.newInstance();
@@ -53,6 +56,7 @@ public class CertificateUtil {
      * @throws UnrecoverableEntryException
      */
     public static KeyStore.PrivateKeyEntry getKeyStore(String keyStorePath, String keyStorePassw, String alias, String aliasPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableEntryException {
+        logger.info("Getting the KeyStore");
         KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(new FileInputStream(keyStorePath), keyStorePassw.toCharArray());
         KeyStore.PrivateKeyEntry keyEntry = (KeyStore.PrivateKeyEntry) ks.getEntry(alias, new KeyStore.PasswordProtection(aliasPassword.toCharArray()));
@@ -65,6 +69,7 @@ public class CertificateUtil {
      * @return
      */
     public static BasicX509Credential getSigningCredential(KeyStore.PrivateKeyEntry keyEntry){
+        logger.info("Getting the SigningCredential");
         BasicX509Credential credential = new BasicX509Credential();
         credential.setPrivateKey(keyEntry.getPrivateKey());
         credential.setEntityCertificate((X509Certificate) keyEntry.getCertificate());

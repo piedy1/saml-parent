@@ -16,7 +16,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -51,15 +50,12 @@ import org.opensaml.xml.encryption.KeySize;
 import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.io.UnmarshallingException;
 import org.opensaml.xml.parse.XMLParserException;
-import org.opensaml.xml.security.credential.BasicCredential;
 import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.security.credential.UsageType;
 import org.opensaml.xml.security.x509.BasicX509Credential;
-import org.opensaml.xml.security.x509.X509Credential;
 import org.opensaml.xml.signature.KeyInfo;
 import org.opensaml.xml.util.XMLHelper;
 import org.w3c.dom.Element;
-import sun.security.krb5.internal.CredentialsUtil;
 
 /**
  *
@@ -308,7 +304,7 @@ public class MetadataUtil {
         conf.initialize();
 
         try {
-            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("/Users/Yandy/Desktop/myidp.jks", "moleson", "tomcat", "moleson");
+            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
             BasicX509Credential credential = CertificateUtil.getSigningCredential(entry);
             KeyInfo keyInfo = CertificateUtil.getKeyInfo(credential);
 
@@ -318,7 +314,7 @@ public class MetadataUtil {
             encMethods.add(encMethod);
 
             //You must create a new keyInfo
-            KeyStore.PrivateKeyEntry entry1 = CertificateUtil.getKeyStore("/Users/Yandy/Desktop/myidp.jks", "moleson", "tomcat", "moleson");
+            KeyStore.PrivateKeyEntry entry1 = CertificateUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
             BasicX509Credential credential1 = CertificateUtil.getSigningCredential(entry1);
             KeyInfo keyInfo1 = CertificateUtil.getKeyInfo(credential1);
 
@@ -367,7 +363,7 @@ public class MetadataUtil {
             String originalAssertionString = XMLHelper.nodeToString(plaintextElement);
             System.out.println("Assertion String: " + originalAssertionString);
             
-            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("/Users/Yandy/Desktop/myidp.jks", "moleson", "tomcat", "moleson");
+            KeyStore.PrivateKeyEntry entry = CertificateUtil.getKeyStore("C:\\Users\\admin\\Desktop\\myidp.jks", "moleson", "tomcat", "moleson");
 
             EncryptedAssertion encAss = EncrypterUtil.encryptAssertion(assertion, (X509Certificate)entry.getCertificate());
             Element plaintextEncr = SamlUtil.marshall(encAss);

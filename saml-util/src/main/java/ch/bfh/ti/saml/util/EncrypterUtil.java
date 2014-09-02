@@ -78,6 +78,9 @@ public class EncrypterUtil {
      * @param nameId
      * @param certificate
      * @return
+     * @throws org.opensaml.xml.encryption.EncryptionException
+     * @throws java.security.NoSuchAlgorithmException
+     * @throws java.security.KeyException
      */
     public static EncryptedID encryptNameID(NameID nameId, X509Certificate certificate) throws EncryptionException, NoSuchAlgorithmException, KeyException {
         // The NameID to be encrypted
